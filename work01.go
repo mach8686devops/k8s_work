@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/healthz", index) // index 为向 url发送请求时，调用的函数
+	http.HandleFunc("/index", index)     // index 为向 url发送请求时，调用的函数
+	http.HandleFunc("/healthz", healthz) // 健康检查，调用的函数
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
 
@@ -37,6 +38,11 @@ type Header struct {
 	Cookie     string `json:"cookie"`
 	JAVA_HOME  string `json:"java_home"`
 	Remote_IP  string `json:"ip"`
+}
+
+func healthz(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("hello world!"))
+	w.WriteHeader(200)
 }
 
 func index(writer http.ResponseWriter, request *http.Request) {
