@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"encoding/json"
 	"os"
+	"net"
 )
 
 func main() {
@@ -13,11 +14,29 @@ func main() {
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
 
+func GetLocalIP() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return ""
+	}
+
+	for _, address := range addrs {
+		// 检查ip地址判断是否回环地址
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String()
+			}
+		}
+	}
+	return ""
+}
+
 type Header struct {
 	Connection string `json:"connection"`
 	Accept     string `json:"accept"`
 	Cookie     string `json:"cookie"`
 	JAVA_HOME  string `json:"java_home"`
+	Remote_IP  string `json:"ip"`
 }
 
 func index(writer http.ResponseWriter, request *http.Request) {
@@ -32,6 +51,7 @@ func index(writer http.ResponseWriter, request *http.Request) {
 	mapOne["Accept"] = request.Header.Get("Accept")
 	mapOne["Cookie"] = request.Header.Get("Cookie")
 	mapOne["JAVA_HOME"] = os.Getenv("JAVA_HOME")
+	mapOne["Remote_IP"] = GetLocalIP()
 	strJson, err := json.Marshal(mapOne)
 	if err != nil {
 		fmt.Printf("json.Marshal failed, err:%v\n", err)
