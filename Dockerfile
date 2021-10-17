@@ -8,26 +8,15 @@ ENV GO111MODULE=on \
 
 WORKDIR /app
 
-COPY . .
 
-# 指定OS等，并go build
-RUN GOOS=linux GOARCH=amd64 go build .
-
-
-# 运行阶段指定scratch作为基础镜像
-FROM alpine
-
-WORKDIR /app
-
-
-COPY --from=builder . ./
+COPY . ./
 
 # 指定运行时环境变量
-ENV PORT=80
+ENV PORT=8080
 
-EXPOSE 80
+EXPOSE 8080
 
-RUN go build work01.go
+RUN GOOS=linux GOARCH=amd64 go build work01.go
 
-RUN ./work01
+ENTRYPOINT ["./work01"]
 
